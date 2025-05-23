@@ -62,6 +62,118 @@ class Main(QMainWindow):
         )
         self.cursor = self.db_connection.cursor()
 
+    def salvar_consulta(self):
+        nome_cliente = self.ui_terceira.label_5.text()
+        paciente_id = self.buscar_id_paciente(nome_cliente)
+        descricao = self.ui_terceira.plainTextEdit.toPlainText()
+        dieta = self.ui_terceira.plainTextEdit_2.toPlainText()
+        orientacoes = self.ui_terceira.plainTextEdit_3.toPlainText()
+
+        if not paciente_id:
+            QMessageBox.warning(self, "Erro", "Paciente não encontrado.")
+            return
+
+        try:
+            query = """
+            INSERT INTO consultas (paciente_id, data, descricao, dieta_prescrita, orientacoes)
+            VALUES (%s, CURDATE(), %s, %s, %s)
+            """
+            self.cursor.execute(query, (paciente_id, descricao, dieta, orientacoes))
+            self.db_connection.commit()
+            QMessageBox.information(self, "Sucesso", "Consulta registrada com sucesso!")
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao salvar consulta: {err}")
+
+    def carregar_plano_alimentar(self, nome_cliente):
+        paciente_id = self.buscar_id_paciente(nome_cliente)
+        if not paciente_id:
+            QMessageBox.warning(self, "Erro", "Paciente não encontrado.")
+            return
+
+        try:
+            self.cursor.execute("SELECT dia, cafe, almoco, tarde, noite, lache, extra FROM plano WHERE paciente_id = %s", (paciente_id,))
+            resultados = self.cursor.fetchall()
+
+            tabela = self.ui_terceira.tableWidget
+            tabela.clearContents()
+
+            for linha in resultados:
+                dia = linha[0] - 1  # dias são de 1 a 7, colunas de 0 a 6
+                for i in range(6):  # 6 refeições
+                    item = QtWidgets.QTableWidgetItem(linha[i + 1])
+                    tabela.setItem(i, dia, item)
+
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao carregar plano alimentar: {err}")
+
+    def gerar_grafico_evolucao_peso(self, paciente_id):
+        try:
+            self.cursor.execute("SELECT data_registro, peso FROM dieta_evo WHERE paciente_id = %s ORDER BY data_registro", (paciente_id,))
+            resultados = self.cursor.fetchall()
+
+            if not resultados:
+                QMessageBox.information(self, "Aviso", "Nenhum dado de evolução de peso encontrado.")
+                return
+
+            datas = [r[0].strftime("%d/%m") for r in resultados]
+            pesos = [float(r[1]) for r in resultados]
+
+            import matplotlib.pyplot as plt
+
+            plt.figure(figsize=(10, 6))
+            plt.plot(datas, pesos, marker='o', linestyle='-', color='green')
+            plt.xlabel("Data")
+            plt.ylabel("Peso (kg)")
+            plt.title("Evolução do Peso do Paciente")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.show()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao gerar gráfico de evolução: {e}")
+
+    def salvar_agendamento(self, nome_cliente):
+        data = self.ui_agendamento.calendarWidget.selectedDate().toString("yyyy-MM-dd")
+        hora = self.ui_agendamento.timeEdit.time().toString("HH:mm:ss")
+        item = self.ui_agendamento.lineEdit.text()
+
+        if not data or not hora:
+            QMessageBox.warning(self, "Aviso", "Selecione uma data e horário.")
+            return
+
+        try:
+            query = """
+            INSERT INTO agendamento (dia, hora, item, nome_cliente)
+            VALUES (%s, %s, %s, %s)
+            """
+            self.cursor.execute(query, (data, hora, item, nome_cliente))
+            self.db_connection.commit()
+            QMessageBox.information(self, "Sucesso", "Agendamento salvo com sucesso!")
+            self.carregar_historico_agendamentos(nome_cliente)
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao salvar agendamento: {err}")
+
+    def carregar_historico_agendamentos(self, nome_cliente):
+        try:
+            self.cursor.execute(
+                "SELECT dia, hora FROM agendamento WHERE nome_cliente = %s ORDER BY dia DESC",
+                (nome_cliente,)
+            )
+            resultados = self.cursor.fetchall()
+            tabela = self.ui_agendamento.tableWidget
+            tabela.setRowCount(len(resultados))
+            tabela.setColumnCount(2)
+            tabela.setHorizontalHeaderLabels(["Data", "Horário"])
+            for i, (dia, hora) in enumerate(resultados):
+                tabela.setItem(i, 0, QtWidgets.QTableWidgetItem(str(dia)))
+                tabela.setItem(i, 1, QtWidgets.QTableWidgetItem(str(hora)))
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao carregar histórico: {err}")
+        
+
+
+
+
     def salvar_dados(self):
         nome = self.lineEdit.text()
         idade = self.lineEdit_2.text()
@@ -116,7 +228,7 @@ class Main(QMainWindow):
         self.ui_agendamento.pushButton.clicked.connect(lambda: self.salvar_agendamento(nome_cliente))
         self.ui_agendamento.pushButton_4.clicked.connect(lambda: self.abrir_consulta(nome_cliente))
         self.ui_agendamento.pushButton_6.clicked.connect(lambda: self.abrir_financeiro(nome_cliente))
-        self.carregar_historico_agendamentos(nome_cliente)
+        self.carregar_agendamento(nome_cliente)
         self.tela_agendamento.show()
 
     def abrir_consulta(self, nome_cliente):
@@ -194,10 +306,10 @@ class Main(QMainWindow):
         resultado = self.cursor.fetchone()
         return resultado[0] if resultado else None
 
-    def carregar_historico_agendamentos(self, nome_cliente):
+    def carregar_agendamento(self, nome_cliente):
         try:
             self.cursor.execute(
-                "SELECT dia, hora FROM agenda_hist WHERE nome_cliente = %s ORDER BY dia DESC",
+                "SELECT dia, hora FROM agendamento WHERE nome_cliente = %s ORDER BY dia DESC",
                 (nome_cliente,)
             )
             resultados = self.cursor.fetchall()
@@ -215,6 +327,33 @@ class Main(QMainWindow):
         for janela in ['tela_agendamento', 'tela_consulta', 'tela_financeiro']:
             if hasattr(self, janela):
                 getattr(self, janela).close()
+    
+    def gerar_grafico_comparativo_pesos(self):
+        try:
+            self.cursor.execute("SELECT nome, peso FROM cadastro_clientes")
+            resultados = self.cursor.fetchall()
+
+            if not resultados:
+                QMessageBox.information(self, "Aviso", "Nenhum dado de paciente encontrado.")
+                return
+
+            nomes = [r[0] for r in resultados]
+            pesos = [float(r[1]) for r in resultados]
+
+            import matplotlib.pyplot as plt
+
+            plt.figure(figsize=(10, 6))
+            plt.bar(nomes, pesos, color='skyblue')
+            plt.xlabel("Pacientes")
+            plt.ylabel("Peso (kg)")
+            plt.title("Comparativo de Pesos dos Pacientes")
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.show()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao gerar gráfico: {e}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

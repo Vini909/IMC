@@ -731,6 +731,30 @@ background-color: rgb(226, 226, 226);</string>
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_5">
+    <property name="geometry">
+     <rect>
+      <x>1340</x>
+      <y>830</y>
+      <width>171</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius:10px;
+background-color: rgb(226, 226, 226);</string>
+    </property>
+    <property name="text">
+     <string>Sugestão</string>
+    </property>
+   </widget>
    <zorder>label_3</zorder>
    <zorder>label_12</zorder>
    <zorder>label_13</zorder>
@@ -764,6 +788,7 @@ background-color: rgb(226, 226, 226);</string>
    <zorder>pushButton_10</zorder>
    <zorder>pushButton_9</zorder>
    <zorder>pushButton_8</zorder>
+   <zorder>pushButton_5</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

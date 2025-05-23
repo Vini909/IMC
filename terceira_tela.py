@@ -285,6 +285,16 @@ class Ui_MainWindow(object):
         self.label_21.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.label_21.setText("")
         self.label_21.setObjectName("label_21")
+        self.pushButton_5 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_5.setGeometry(QtCore.QRect(1340, 830, 171, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(False)
+        font.setWeight(50)
+        self.pushButton_5.setFont(font)
+        self.pushButton_5.setStyleSheet("border-radius:10px;\n"
+"background-color: rgb(226, 226, 226);")
+        self.pushButton_5.setObjectName("pushButton_5")
         self.label_3.raise_()
         self.label_12.raise_()
         self.label_13.raise_()
@@ -318,6 +328,7 @@ class Ui_MainWindow(object):
         self.pushButton_10.raise_()
         self.pushButton_9.raise_()
         self.pushButton_8.raise_()
+        self.pushButton_5.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 21))
@@ -373,6 +384,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "Salvar Dados"))
         self.pushButton_3.setText(_translate("MainWindow", "Gerar Grafico"))
         self.pushButton_4.setText(_translate("MainWindow", "Comparar grafico"))
+        self.pushButton_5.setText(_translate("MainWindow", "Sugestão"))
 
 
 if __name__ == "__main__":
