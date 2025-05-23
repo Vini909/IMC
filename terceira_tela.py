@@ -233,6 +233,26 @@ class Ui_MainWindow(object):
         self.pushButton_2.setStyleSheet("border-radius:10px;\n"
 "background-color: rgb(226, 226, 226);")
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(440, 830, 171, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(False)
+        font.setWeight(50)
+        self.pushButton_3.setFont(font)
+        self.pushButton_3.setStyleSheet("border-radius:10px;\n"
+"background-color: rgb(226, 226, 226);")
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_4.setGeometry(QtCore.QRect(440, 880, 171, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(False)
+        font.setWeight(50)
+        self.pushButton_4.setFont(font)
+        self.pushButton_4.setStyleSheet("border-radius:10px;\n"
+"background-color: rgb(226, 226, 226);")
+        self.pushButton_4.setObjectName("pushButton_4")
         self.label_3.raise_()
         self.label_12.raise_()
         self.label_13.raise_()
@@ -260,6 +280,8 @@ class Ui_MainWindow(object):
         self.label_19.raise_()
         self.pushButton.raise_()
         self.pushButton_2.raise_()
+        self.pushButton_3.raise_()
+        self.pushButton_4.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 21))
@@ -313,6 +335,8 @@ class Ui_MainWindow(object):
         self.label_19.setText(_translate("MainWindow", "Mês:"))
         self.pushButton.setText(_translate("MainWindow", "Salvar Plano"))
         self.pushButton_2.setText(_translate("MainWindow", "Salvar Dados"))
+        self.pushButton_3.setText(_translate("MainWindow", "Gerar Grafico"))
+        self.pushButton_4.setText(_translate("MainWindow", "Comparar grafico"))
 
 
 if __name__ == "__main__":
