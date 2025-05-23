@@ -85,6 +85,12 @@ class Main(QMainWindow):
             QMessageBox.critical(self, "Erro", f"Erro ao salvar consulta: {err}")
 
     def carregar_plano_alimentar(self, nome_cliente):
+        try:
+            while self.cursor.nextset():
+                pass  # limpa qualquer resultado pendente
+        except:
+            pass
+
         paciente_id = self.buscar_id_paciente(nome_cliente)
         if not paciente_id:
             QMessageBox.warning(self, "Erro", "Paciente não encontrado.")
@@ -105,6 +111,8 @@ class Main(QMainWindow):
 
         except mysql.connector.Error as err:
             QMessageBox.critical(self, "Erro", f"Erro ao carregar plano alimentar: {err}")
+
+
 
     def gerar_grafico_evolucao_peso(self, paciente_id):
         try:
@@ -302,9 +310,20 @@ class Main(QMainWindow):
             QMessageBox.critical(self, "Erro", f"Erro ao gerar sugestão: {e}")
 
     def buscar_id_paciente(self, nome_cliente):
-        self.cursor.execute("SELECT id FROM cadastro_clientes WHERE nome = %s", (nome_cliente,))
-        resultado = self.cursor.fetchone()
-        return resultado[0] if resultado else None
+        try:
+            while self.cursor.nextset():
+                pass  # limpa qualquer resultado pendente
+        except:
+            pass
+
+        try:
+            self.cursor.execute("SELECT id FROM cadastro_clientes WHERE nome = %s", (nome_cliente,))
+            resultado = self.cursor.fetchone()
+            return resultado[0] if resultado else None
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao buscar paciente: {err}")
+            return None
+
 
     def carregar_agendamento(self, nome_cliente):
         try:
