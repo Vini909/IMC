@@ -87,7 +87,7 @@ class Main(QMainWindow):
     def carregar_plano_alimentar(self, nome_cliente):
         try:
             while self.cursor.nextset():
-                pass  # limpa qualquer resultado pendente
+                pass
         except:
             pass
 
@@ -97,20 +97,39 @@ class Main(QMainWindow):
             return
 
         try:
-            self.cursor.execute("SELECT dia, cafe, almoco, tarde, noite, lache, extra FROM plano WHERE paciente_id = %s", (paciente_id,))
+            self.cursor.execute("""
+                SELECT dia, cafe, almoco, tarde, noite, lache, extra
+                FROM plano WHERE paciente_id = %s
+            """, (paciente_id,))
             resultados = self.cursor.fetchall()
 
             tabela = self.ui_terceira.tableWidget
             tabela.clearContents()
 
             for linha in resultados:
-                dia = linha[0] - 1  # dias são de 1 a 7, colunas de 0 a 6
-                for i in range(6):  # 6 refeições
+                dia = linha[0] - 1
+                for i in range(6):
                     item = QtWidgets.QTableWidgetItem(linha[i + 1])
                     tabela.setItem(i, dia, item)
-
         except mysql.connector.Error as err:
             QMessageBox.critical(self, "Erro", f"Erro ao carregar plano alimentar: {err}")
+
+    def atualizar_peso_paciente(self, nome_cliente, novo_peso, novo_imc):
+        paciente_id = self.buscar_id_paciente(nome_cliente)
+        if not paciente_id:
+            QMessageBox.warning(self, "Erro", "Paciente não encontrado para atualização de peso.")
+            return
+
+        try:
+            self.cursor.execute(
+                "INSERT INTO dieta_evo (paciente_id, peso, imc, data_registro) VALUES (%s, %s, %s, CURDATE())",
+                (paciente_id, novo_peso, novo_imc)
+            )
+            self.db_connection.commit()
+            QMessageBox.information(self, "Sucesso", "Peso e IMC atualizados com histórico salvo.")
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Erro", f"Erro ao atualizar peso: {err}")
+
 
 
 
@@ -212,14 +231,24 @@ class Main(QMainWindow):
         idade = self.lineEdit_3.text()
         peso = self.lineEdit_8.text()
         imc = self.lineEdit_9.text()
+
         if not idade or not peso or not imc:
             QMessageBox.warning(self, "Aviso", "Preencha todos os campos de login.")
             return
+
+        try:
+            while self.cursor.nextset():
+                pass
+        except:
+            pass
+
         try:
             query = "SELECT * FROM cadastro_clientes WHERE idade = %s AND peso = %s AND imc = %s"
             self.cursor.execute(query, (idade, peso, imc))
-            resultado = self.cursor.fetchone()
-            if resultado:
+            resultados = self.cursor.fetchall()
+
+            if resultados:
+                resultado = resultados[0] 
                 nome_cliente = resultado[1]
                 self.abrir_agendamento(nome_cliente)
             else:
@@ -312,7 +341,7 @@ class Main(QMainWindow):
     def buscar_id_paciente(self, nome_cliente):
         try:
             while self.cursor.nextset():
-                pass  # limpa qualquer resultado pendente
+                pass
         except:
             pass
 
